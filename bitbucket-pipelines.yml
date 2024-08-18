@@ -8,8 +8,8 @@ pipelines:
           caches:
             - maven
           script:
-            - apt-get update
-            - apt-get install -y wget
+            - apk update
+            - apk add --no-cache wget tar
             - wget https://download.java.net/java/GA/jdk22/xyz/build/linux-x64_bin.tar.gz
             - tar -xvf linux-x64_bin.tar.gz
             - mv jdk-22 /opt/
@@ -18,11 +18,8 @@ pipelines:
             - java -version  # Verify Java 22 is installed
             - mvn -B verify --file pom.xml
           after-script:
-              # Collect checkstyle results, if any, and convert to Bitbucket Code Insights.
             - pipe: atlassian/checkstyle-report:0.3.0
       - step:
           name: Security Scan
           script:
-            # Run a security scan for sensitive data.
-            # See more security tools at https://bitbucket.org/product/features/pipelines/integrations?&category=security
             - pipe: atlassian/git-secrets-scan:0.5.1
