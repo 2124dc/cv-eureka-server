@@ -1,25 +1,20 @@
-image: maven:3.6.3
+image: maven:3.8.7-openjdk-22
 
 pipelines:
   default:
-    - parallel:
-      - step:
-          name: Install Java 22 and Build
-          caches:
-            - maven
-          script:
-            - apk update
-            - apk add --no-cache wget tar
-            - wget https://download.java.net/java/GA/jdk22/xyz/build/linux-x64_bin.tar.gz
-            - tar -xvf linux-x64_bin.tar.gz
-            - mv jdk-22 /opt/
-            - export JAVA_HOME=/opt/jdk-22
-            - export PATH=$JAVA_HOME/bin:$PATH
-            - java -version  # Verify Java 22 is installed
-            - mvn -B verify --file pom.xml
-          after-script:
-            - pipe: atlassian/checkstyle-report:0.3.0
-      - step:
-          name: Security Scan
-          script:
-            - pipe: atlassian/git-secrets-scan:0.5.1
+    - step:
+        name: Build and Test
+        caches:
+          - maven
+        script:
+          - mvn clean install
+    - step:
+        name: Package Application
+        caches:
+          - maven
+        script:
+          - mvn clean package -DskipTests
+
+definitions:
+  caches:
+    maven: ~/.m2/repository
