@@ -1,12 +1,14 @@
-image: maven:3.8.7-openjdk-22
+image: openjdk:22
 
 pipelines:
   default:
     - step:
-        name: Build and Test
+        name: Install Maven and Build
         caches:
           - maven
         script:
+          - apt-get update && apt-get install -y maven
+          - mvn -version  # Optional: Check Maven version
           - mvn clean install
     - step:
         name: Package Application
