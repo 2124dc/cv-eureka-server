@@ -24,6 +24,11 @@ pipelines:
         name: Deploy to VPS
         deployment: production  # Optional: Set this to your desired deployment environment
         script:
+        
+          - echo "Installing SSH and SCP..."
+          # Update package lists and install openssh-client
+          - apt-get update && apt-get install -y openssh-client
+
           - echo "Starting build and deployment..."
           
           # Build the project
