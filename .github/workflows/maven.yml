@@ -27,7 +27,9 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
         cache: maven
-      - run: echo "JDK 21 setup completed successfully."
+
+    - name: Confirm JDK Setup
+      run: echo "JDK 21 setup completed successfully."
 
     - name: Build with Maven and Extract JAR Name
       id: build
@@ -42,11 +44,15 @@ jobs:
       uses: webfactory/ssh-agent@v0.5.3
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-      - run: echo "SSH setup completed successfully."
+
+    - name: Confirm SSH Setup
+      run: echo "SSH setup completed successfully."
 
     - name: Add SSH key to known_hosts
       run: ssh-keyscan $SSH_HOST >> ~/.ssh/known_hosts
-      - run: echo "Added SSH key to known_hosts successfully."
+
+    - name: Confirm SSH Key Addition
+      run: echo "Added SSH key to known_hosts successfully."
 
     - name: Create SSH Key File
       run: |
@@ -56,13 +62,26 @@ jobs:
 
     - name: Test SSH Connectivity
       run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "echo 'SSH Connection Successful'"
-      - run: echo "SSH connectivity test successful."
+
+    - name: Confirm SSH Connectivity Test
+      run: echo "SSH connectivity test successful."
 
     - name: Deploy JAR to VPS
       run: |
         scp target/${{ env.JAR_NAME }} $SSH_USER@$SSH_HOST:$REMOTE_DIR/
         echo "JAR copied to VPS successfully."
-        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "/system/projects/java/chavdar_vishranti/scripts/stop_eureka_server.sh"
-        echo "Existing service stopped successfully on VPS."
-        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "nohup java -jar $REMOTE_DIR/${{ env.JAR_NAME }} > $REMOTE_DIR/eureka-server.log 2>&1 &"
-        echo "New service started successfully on VPS."
+
+    - name: Stop existing service on VPS
+      run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "/system/projects/java/chavdar_vishranti/scripts/stop_eureka_server.sh"
+      env:
+        SSH_HOST: "103.168.18.176"
+        SSH_USER: "root"
+
+    - name: Confirm Service Stop
+      run: echo "Existing service stopped successfully on VPS."
+
+    - name: Start new service on VPS
+      run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "nohup java -jar $REMOTE_DIR/${{ env.JAR_NAME }} > $REMOTE_DIR/eureka-server.log 2>&1 &"
+
+    - name: Confirm Service Start
+      run: echo "New service started successfully on VPS."
