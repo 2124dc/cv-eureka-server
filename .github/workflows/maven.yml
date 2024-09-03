@@ -42,7 +42,7 @@ jobs:
         REMOTE_DIR: "/system/projects/java/chavdar_vishranti/jars/eureka-server"
 
     - name: Stop existing service on VPS
-      run: ssh $SSH_USER@$SSH_HOST "pkill -f 'eureka-server'"
+      run: ssh $SSH_USER@$SSH_HOST "pkill -f 'eureka-server' || true"
       env:
         SSH_HOST: "103.168.18.176"
         SSH_USER: "root"
