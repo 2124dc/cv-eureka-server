@@ -28,7 +28,12 @@ jobs:
         cache: maven
 
     - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      id: build
+      run: |
+        mvn -B package --file pom.xml
+        # Find the JAR file and save its name
+        JAR_NAME=$(ls target/*.jar | xargs -n 1 basename)
+        echo "JAR_NAME=$JAR_NAME" >> $GITHUB_ENV
 
     - name: Set up SSH
       uses: webfactory/ssh-agent@v0.5.3
@@ -49,7 +54,7 @@ jobs:
         cat ~/.ssh/id_rsa
 
     - name: Copy JAR to VPS
-      run: scp -r target/*.jar $SSH_USER@$SSH_HOST:$REMOTE_DIR/
+      run: scp -r target/${{ env.JAR_NAME }} $SSH_USER@$SSH_HOST:$REMOTE_DIR/
 
     - name: Test SSH Connectivity
       run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "echo 'SSH Connection Successful'"
@@ -58,4 +63,4 @@ jobs:
       run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "/system/projects/java/chavdar_vishranti/scripts/stop_eureka_server.sh"
 
     - name: Start new service on VPS
-      run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "nohup java -jar $REMOTE_DIR/$JAR_NAME > $REMOTE_DIR/eureka-server.log 2>&1 &"
+      run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "nohup java -jar $REMOTE_DIR/${{ env.JAR_NAME }} > $REMOTE_DIR/eureka-server.log 2>&1 &"
