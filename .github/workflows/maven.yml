@@ -41,11 +41,11 @@ jobs:
         SSH_USER: "root"
         REMOTE_DIR: "/system/projects/java/chavdar_vishranti/jars/eureka-server"
 
-    - name: Stop existing service on VPS
-      run: ssh -v $SSH_USER@$SSH_HOST "bash -c '/usr/bin/pkill -f \"eureka-server\" || true'"
-      env:
-        SSH_HOST: "103.168.18.176"
-        SSH_USER: "root"
+    # - name: Stop existing service on VPS
+    #   run: ssh -v $SSH_USER@$SSH_HOST "bash -c '/usr/bin/pkill -f \"eureka-server\" || true'"
+    #   env:
+    #     SSH_HOST: "103.168.18.176"
+    #     SSH_USER: "root"
 
     - name: Start new service on VPS
       run: ssh -v $SSH_USER@$SSH_HOST "nohup java -jar $REMOTE_DIR/eureka-server.jar > $REMOTE_DIR/eureka-server.log 2>&1 &"
