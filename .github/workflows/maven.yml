@@ -34,14 +34,22 @@ jobs:
       env:
         SSH_HOST: "103.168.18.176"
 
-    - name: Deploy to VPS
-      run: |
-        scp -r target/*.jar $SSH_USER@$SSH_HOST:$REMOTE_DIR/
-        ssh $SSH_USER@$SSH_HOST << EOF
-          pkill -f 'eureka-server'
-          nohup java -jar $REMOTE_DIR/eureka-server.jar > /dev/null 2>&1 &
-        EOF
+    - name: Copy JAR to VPS
+      run: scp -r target/*.jar $SSH_USER@$SSH_HOST:$REMOTE_DIR/
       env:
-        SSH_HOST: "103.168.18.176"  # VPS IP address
-        SSH_USER: "root"            # SSH user
+        SSH_HOST: "103.168.18.176"
+        SSH_USER: "root"
+        REMOTE_DIR: "/system/projects/java/chavdar_vishranti/jars/eureka-server"
+
+    - name: Stop existing service on VPS
+      run: ssh $SSH_USER@$SSH_HOST "pkill -f 'eureka-server'"
+      env:
+        SSH_HOST: "103.168.18.176"
+        SSH_USER: "root"
+
+    - name: Start new service on VPS
+      run: ssh $SSH_USER@$SSH_HOST "nohup java -jar $REMOTE_DIR/eureka-server.jar > /dev/null 2>&1 &"
+      env:
+        SSH_HOST: "103.168.18.176"
+        SSH_USER: "root"
         REMOTE_DIR: "/system/projects/java/chavdar_vishranti/jars/eureka-server"
