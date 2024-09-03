@@ -14,7 +14,6 @@ jobs:
       SSH_HOST: "103.168.18.176"
       SSH_USER: "root"
       REMOTE_DIR: "/system/projects/java/chavdar_vishranti/jars/eureka-server"
-      # JAR_NAME: "eureka-server-0.0.1-SNAPSHOT.jar"
       SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
     steps:
@@ -27,7 +26,7 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
-    - name: Build with Maven
+    - name: Build with Maven and Extract JAR Name
       id: build
       run: |
         mvn -B package --file pom.xml
@@ -48,19 +47,11 @@ jobs:
         echo "$SSH_KEY" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
 
-    - name: Debug SSH Key
-      run: |
-        ls -la ~/.ssh
-        cat ~/.ssh/id_rsa
-
-    - name: Copy JAR to VPS
-      run: scp -r target/${{ env.JAR_NAME }} $SSH_USER@$SSH_HOST:$REMOTE_DIR/
-
     - name: Test SSH Connectivity
       run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "echo 'SSH Connection Successful'"
 
-    - name: Stop existing service on VPS
-      run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "/system/projects/java/chavdar_vishranti/scripts/stop_eureka_server.sh"
-
-    - name: Start new service on VPS
-      run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "nohup java -jar $REMOTE_DIR/${{ env.JAR_NAME }} > $REMOTE_DIR/eureka-server.log 2>&1 &"
+    - name: Deploy JAR to VPS
+      run: |
+        scp target/${{ env.JAR_NAME }} $SSH_USER@$SSH_HOST:$REMOTE_DIR/
+        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "/system/projects/java/chavdar_vishranti/scripts/stop_eureka_server.sh"
+        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "nohup java -jar $REMOTE_DIR/${{ env.JAR_NAME }} > $REMOTE_DIR/eureka-server.log 2>&1 &"
