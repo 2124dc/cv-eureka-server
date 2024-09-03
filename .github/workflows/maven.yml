@@ -39,7 +39,12 @@ jobs:
         SSH_HOST: "103.168.18.176"
         SSH_USER: "root"
         REMOTE_DIR: "/system/projects/java/chavdar_vishranti/jars/eureka-server"
-
+    - name: Debug SSH Key
+      run: |
+        echo "SSH_PRIVATE_KEY length: ${#SSH_PRIVATE_KEY}"
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        
     - name: Stop existing service on VPS
       run: |
         echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
