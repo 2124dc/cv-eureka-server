@@ -14,7 +14,7 @@ jobs:
       SSH_HOST: "103.168.18.176"
       SSH_USER: "root"
       REMOTE_DIR: "/system/projects/java/chavdar_vishranti/jars/eureka-server"
-      JAR_NAME: "eureka-server-0.0.1-SNAPSHOT.jar"
+      # JAR_NAME: "eureka-server-0.0.1-SNAPSHOT.jar"
       SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
     steps:
