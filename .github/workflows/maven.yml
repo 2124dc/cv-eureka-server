@@ -29,6 +29,11 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+    - name: Add SSH key to known_hosts
+      run: ssh-keyscan $SSH_HOST >> ~/.ssh/known_hosts
+      env:
+        SSH_HOST: "103.168.18.176"
+
     - name: Deploy to VPS
       run: |
         scp -r target/*.jar $SSH_USER@$SSH_HOST:$REMOTE_DIR/
