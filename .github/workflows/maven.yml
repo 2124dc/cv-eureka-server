@@ -8,8 +8,14 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
+
+    env:
+      SSH_HOST: "103.168.18.176"
+      SSH_USER: "root"
+      REMOTE_DIR: "/system/projects/java/chavdar_vishranti/jars/eureka-server"
+      JAR_NAME: "eureka-server-0.0.1-SNAPSHOT.jar"
+      SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
     steps:
     - uses: actions/checkout@v4
@@ -31,15 +37,11 @@ jobs:
 
     - name: Add SSH key to known_hosts
       run: ssh-keyscan $SSH_HOST >> ~/.ssh/known_hosts
-      env:
-        SSH_HOST: "103.168.18.176"
 
     - name: Create SSH Key File
       run: |
-        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+        echo "$SSH_KEY" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
     - name: Debug SSH Key
       run: |
@@ -48,28 +50,12 @@ jobs:
 
     - name: Copy JAR to VPS
       run: scp -r target/*.jar $SSH_USER@$SSH_HOST:$REMOTE_DIR/
-      env:
-        SSH_HOST: "103.168.18.176"
-        SSH_USER: "root"
-        REMOTE_DIR: "/system/projects/java/chavdar_vishranti/jars/eureka-server"
 
     - name: Test SSH Connectivity
       run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "echo 'SSH Connection Successful'"
-      env:
-        SSH_HOST: "103.168.18.176"
-        SSH_USER: "root"
 
     - name: Stop existing service on VPS
       run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "/system/projects/java/chavdar_vishranti/scripts/stop_eureka_server.sh"
-      env:
-        SSH_HOST: "103.168.18.176"
-        SSH_USER: "root"
-
-
 
     - name: Start new service on VPS
-      run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "nohup java -jar $REMOTE_DIR/eureka-server-0.0.1-SNAPSHOT.jar > $REMOTE_DIR/eureka-server.log 2>&1 &"
-      env:
-        SSH_HOST: "103.168.18.176"
-        SSH_USER: "root"
-        REMOTE_DIR: "/system/projects/java/chavdar_vishranti/jars/eureka-server"
+      run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "nohup java -jar $REMOTE_DIR/$JAR_NAME > $REMOTE_DIR/eureka-server.log 2>&1 &"
