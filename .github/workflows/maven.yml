@@ -46,12 +46,12 @@ jobs:
         echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
         echo "Repository name is $REPO_NAME."
 
-    - name: Set Remote Directory
-      id: remote_dir
-      run: |
-        REMOTE_DIR="${{ env.REMOTE_BASE_DIR }}/jars/$REPO_NAME"
-        echo "REMOTE_DIR=$REMOTE_DIR" >> $GITHUB_ENV
-        echo "Remote directory set to $REMOTE_DIR."
+    # - name: Set Remote Directory
+    #   id: remote_dir
+    #   run: |
+    #     REMOTE_DIR="${{ env.REMOTE_BASE_DIR }}/jars/$REPO_NAME"
+    #     echo "REMOTE_DIR=$REMOTE_DIR" >> $GITHUB_ENV
+    #     echo "Remote directory set to $REMOTE_DIR."
 
     - name: Generate Git Build Info File
       run: |
@@ -74,8 +74,8 @@ jobs:
 
     - name: Copy JAR and Build Info to VPS
       run: |
-        scp target/${{ env.JAR_NAME }} $SSH_USER@$SSH_HOST:$REMOTE_DIR/
-        scp build_info.txt $SSH_USER@$SSH_HOST:$REMOTE_DIR/
+        scp target/${{ env.JAR_NAME }} $SSH_USER@$SSH_HOST:$REMOTE_DIR/jars/$REPO_NAME
+        scp build_info.txt $SSH_USER@$SSH_HOST:$REMOTE_DIR/jars/$REPO_NAME
         echo "JAR and build_info.txt copied to VPS successfully."
 
     - name: Stop existing service on VPS
