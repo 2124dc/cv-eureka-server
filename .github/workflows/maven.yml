@@ -35,53 +35,34 @@ jobs:
       id: build
       run: |
         mvn -B package --file pom.xml
-        # Find the JAR file and save its name
         JAR_NAME=$(ls target/*.jar | xargs -n 1 basename)
         echo "JAR_NAME=$JAR_NAME" >> $GITHUB_ENV
         echo "Maven build completed successfully and JAR_NAME is $JAR_NAME."
+
+    - name: Generate Git Build Info File
+      run: |
+        echo "Commit Hash: $(git rev-parse HEAD)" > build_info.txt
+        echo "Branch: $(git rev-parse --abbrev-ref HEAD)" >> build_info.txt
+        echo "Build Date: $(date)" >> build_info.txt
+        echo "Built By: ${{ github.actor }}" >> build_info.txt
+        echo "Generated build_info.txt with Git details."
 
     - name: Set up SSH
       uses: webfactory/ssh-agent@v0.5.3
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-    - name: Confirm SSH Setup
-      run: echo "SSH setup completed successfully."
-
     - name: Add SSH key to known_hosts
       run: ssh-keyscan $SSH_HOST >> ~/.ssh/known_hosts
 
-    - name: Confirm SSH Key Addition
-      run: echo "Added SSH key to known_hosts successfully."
-
-    - name: Create SSH Key File
-      run: |
-        echo "$SSH_KEY" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        echo "Created and configured SSH key file successfully."
-
-    - name: Test SSH Connectivity
-      run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "echo 'SSH Connection Successful'"
-
-    - name: Confirm SSH Connectivity Test
-      run: echo "SSH connectivity test successful."
-
-    - name: Copy JAR to VPS
+    - name: Copy JAR and Build Info to VPS
       run: |
         scp target/${{ env.JAR_NAME }} $SSH_USER@$SSH_HOST:$REMOTE_DIR/
-        echo "JAR copied to VPS successfully."
+        scp build_info.txt $SSH_USER@$SSH_HOST:$REMOTE_DIR/
+        echo "JAR and build_info.txt copied to VPS successfully."
 
     - name: Stop existing service on VPS
       run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "/system/projects/java/chavdar_vishranti/scripts/stop_service.sh eureka-server-0.0.1-SNAPSHOT.jar" || true
-    # - name: Stop existing service on VPS
-    #   run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "/system/projects/java/chavdar_vishranti/scripts/stop_service.sh ${{ env.JAR_NAME }}"
-    #   env:
-    #     SSH_HOST: "103.168.18.176"
-    #     SSH_USER: "root"
-
-
-    - name: Confirm Service Stop
-      run: echo "Existing service stopped successfully on VPS."
 
     - name: Start new service on VPS
       run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "nohup java -jar $REMOTE_DIR/${{ env.JAR_NAME }} > $REMOTE_DIR/eureka-server.log 2>&1 &"
