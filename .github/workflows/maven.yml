@@ -55,14 +55,14 @@ jobs:
 
     - name: Generate Git Build Info File
       run: |
-        echo "Commit Hash: $(git rev-parse HEAD)" > build_info.txt
-        echo "Branch: $(git rev-parse --abbrev-ref HEAD)" >> build_info.txt
-        echo "Git Tag: $(git describe --tags --abbrev=0 2>/dev/null)" >> build_info.txt
-        echo "Built By: ${{ github.actor }}" >> build_info.txt
-        echo "Build Number: ${{ github.run_number }}" >> build_info.txt
-        echo "Build Date: $(date)" >> build_info.txt
-        echo "Project Version: $(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> build_info.txt
-        echo "Generated build_info.txt with Git details."
+        echo "Commit Hash: $(git rev-parse HEAD)" > $REPO_NAME.txt
+        echo "Branch: $(git rev-parse --abbrev-ref HEAD)" >> $REPO_NAME.txt
+        echo "Git Tag: $(git describe --tags --abbrev=0 2>/dev/null)" >> $REPO_NAME.txt
+        echo "Built By: ${{ github.actor }}" >> $REPO_NAME.txt
+        echo "Build Number: ${{ github.run_number }}" >> $REPO_NAME.txt
+        echo "Build Date: $(date)" >> $REPO_NAME.txt
+        echo "Project Version: $(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $REPO_NAME.txt
+        echo "Generated $REPO_NAME.txt with Git details."
 
     - name: Set up SSH
       uses: webfactory/ssh-agent@v0.5.3
@@ -75,14 +75,14 @@ jobs:
     - name: Copy JAR and Build Info to VPS
       run: |
         scp target/${{ env.JAR_NAME }} $SSH_USER@$SSH_HOST:$REMOTE_DIR/jars/$REPO_NAME
-        scp build_info.txt $SSH_USER@$SSH_HOST:$REMOTE_DIR/jars/$REPO_NAME
-        echo "JAR and build_info.txt copied to VPS successfully."
+        scp $REPO_NAME.txt $SSH_USER@$SSH_HOST:$REMOTE_DIR/jars/$REPO_NAME
+        echo "JAR and $REPO_NAME.txt copied to VPS successfully."
 
     - name: Stop existing service on VPS
       run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "$REMOTE_DIR/scripts/stop_service.sh ${{ env.JAR_NAME }}" || true
 
     - name: Start new service on VPS
-      run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "nohup java -jar $REMOTE_DIR/jars/${{ env.JAR_NAME }} > $REMOTE_DIR/jars/$REPO_NAME.log 2>&1 &"
+      run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "nohup java -jar $REMOTE_DIR/jars/${{ env.JAR_NAME }} > $REMOTE_DIR/jars/$REPO_NAME/$REPO_NAME.log 2>&1 &"
 
     - name: Confirm Service Start
       run: echo "New service started successfully on VPS."
