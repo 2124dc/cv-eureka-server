@@ -43,8 +43,11 @@ jobs:
       run: |
         echo "Commit Hash: $(git rev-parse HEAD)" > build_info.txt
         echo "Branch: $(git rev-parse --abbrev-ref HEAD)" >> build_info.txt
-        echo "Build Date: $(date)" >> build_info.txt
+        echo "Git Tag: $(git describe --tags --abbrev=0 2>/dev/null)" >> build_info.txt
         echo "Built By: ${{ github.actor }}" >> build_info.txt
+        echo "Build Number: ${{ github.run_number }}" >> build_info.txt
+        echo "Build Date: $(date)" >> build_info.txt
+        echo "Project Version: $(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> build_info.txt
         echo "Generated build_info.txt with Git details."
 
     - name: Set up SSH
