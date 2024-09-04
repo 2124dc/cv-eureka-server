@@ -11,9 +11,9 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      SSH_HOST: "103.168.18.176"
-      SSH_USER: "root"
-      REMOTE_DIR: "/system/projects/java/chavdar_vishranti/jars/eureka-server"
+      SSH_HOST: ${{ secrets.VPS_SSH_HOST }}
+      SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      REMOTE_DIR: ${{ secrets.VPS_REMOTE_DIR}}
       SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
     steps:
@@ -38,6 +38,20 @@ jobs:
         JAR_NAME=$(ls target/*.jar | xargs -n 1 basename)
         echo "JAR_NAME=$JAR_NAME" >> $GITHUB_ENV
         echo "Maven build completed successfully and JAR_NAME is $JAR_NAME."
+
+    - name: Retrieve Repository Name
+      id: repo
+      run: |
+        REPO_NAME=$(basename $GITHUB_REPOSITORY)
+        echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
+        echo "Repository name is $REPO_NAME."
+
+    - name: Set Remote Directory
+      id: remote_dir
+      run: |
+        REMOTE_DIR="${{ env.REMOTE_BASE_DIR }}/jars/$REPO_NAME"
+        echo "REMOTE_DIR=$REMOTE_DIR" >> $GITHUB_ENV
+        echo "Remote directory set to $REMOTE_DIR."
 
     - name: Generate Git Build Info File
       run: |
@@ -65,10 +79,10 @@ jobs:
         echo "JAR and build_info.txt copied to VPS successfully."
 
     - name: Stop existing service on VPS
-      run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "/system/projects/java/chavdar_vishranti/scripts/stop_service.sh ${{ env.JAR_NAME }}" || true
+      run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "$REMOTE_DIR/scripts/stop_service.sh ${{ env.JAR_NAME }}" || true
 
     - name: Start new service on VPS
-      run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "nohup java -jar $REMOTE_DIR/${{ env.JAR_NAME }} > $REMOTE_DIR/eureka-server.log 2>&1 &"
+      run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "nohup java -jar $REMOTE_DIR/jars/${{ env.JAR_NAME }} > $REMOTE_DIR/jars/$REPO_NAME.log 2>&1 &"
 
     - name: Confirm Service Start
       run: echo "New service started successfully on VPS."
