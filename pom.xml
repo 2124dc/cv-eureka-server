@@ -66,6 +66,8 @@
 	</dependencyManagement>
 
 	<build>
+		<finalName>cv-eureka-server</finalName> <!-- This sets the final JAR name -->
+		
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
