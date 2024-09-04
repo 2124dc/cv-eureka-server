@@ -66,16 +66,17 @@ jobs:
     - name: Confirm SSH Connectivity Test
       run: echo "SSH connectivity test successful."
 
-    - name: Deploy JAR to VPS
+    - name: Copy JAR to VPS
       run: |
         scp target/${{ env.JAR_NAME }} $SSH_USER@$SSH_HOST:$REMOTE_DIR/
         echo "JAR copied to VPS successfully."
 
     - name: Stop existing service on VPS
-      run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "/system/projects/java/chavdar_vishranti/scripts/stop_eureka_server.sh"
+      run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "/system/projects/java/chavdar_vishranti/scripts/stop_service.sh ${{ env.JAR_NAME }}"
       env:
         SSH_HOST: "103.168.18.176"
         SSH_USER: "root"
+
 
     - name: Confirm Service Stop
       run: echo "Existing service stopped successfully on VPS."
