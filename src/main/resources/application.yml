@@ -7,7 +7,6 @@ spring:
         registration:
           eureka:
             enabled: true
-
 server:
   port: 8060
 
@@ -19,7 +18,7 @@ eureka:
     registerWithEureka: false
     fetchRegistry: false
     serviceUrl:
-      defaultZone: http://eureka-server:8761/eureka/
+      defaultZone: http://eureka-server:8060/eureka/
   server:
     enableSelfPreservation: false
     evictionIntervalMillis: 10000
