@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: eureka-service
+  cloud:
+    discovery:
+      client:
+        registration:
+          eureka:
+            enabled: true
+server:
+  port: 8060
+
+eureka:
+  instance:
+    hostname: cv-eureka-server
+    prefer-ip-address: true
+  client:
+    registerWithEureka: false
+    fetchRegistry: false
+    serviceUrl:
+      defaultZone: http://localhost:8060/eureka/
+  server:
+    enableSelfPreservation: false
+    evictionIntervalMillis: 10000
