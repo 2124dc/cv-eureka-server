@@ -18,7 +18,7 @@ eureka:
     registerWithEureka: false
     fetchRegistry: false
     serviceUrl:
-      defaultZone: http://eureka-server:8060/eureka/
+      defaultZone: http://localhost:8060/eureka/
   server:
     enableSelfPreservation: false
     evictionIntervalMillis: 10000
